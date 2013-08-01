@@ -29,7 +29,11 @@
 #import "BundlerAppDelegate.h"
 #import "PLSimulator.h"
 
+@interface BundlerAppDelegate ()
 
+- (void)processCLIDefaultSimulator;
+
+@end
 
 @interface BundlerAppDelegate (PrivateMethods)
 
@@ -45,6 +49,27 @@
 
 @implementation BundlerAppDelegate
 
+- (void)processCLIDefaultSimulator
+{
+    _defaultSimulator = SBADefaultSimulatorUndefined;
+    _hasCommandLineArguments = NO;
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSString *defaultSimulatorString = [[userDefaults stringForKey:@"defaultSimulator"] lowercaseString];
+    
+    if (defaultSimulatorString != nil) {
+        _hasCommandLineArguments = YES;
+        
+        if ([defaultSimulatorString isEqualToString:@"iphone"]) {
+            _defaultSimulator = SBADefaultSimulatoriPhone;
+        } else if ([defaultSimulatorString isEqualToString:@"ipad"]) {
+            _defaultSimulator = SBADefaultSimulatoriPad;
+        } else if ([defaultSimulatorString isEqualToString:@"user"]) {
+            _defaultSimulator = SBADefaultSimulatorUserSelect;
+        }
+    }
+}
+
 - (void) awakeFromNib {
     _appConfigControllers = [NSMutableSet set];
     _tool = [BundlerTool new];
@@ -52,6 +77,8 @@
 
 // from NSApplicationDelegate protocol
 - (void) applicationDidFinishLaunching: (NSNotification *) aNotification {
+    [self processCLIDefaultSimulator];
+    
     /* Since we're a droplet, if no files were received we just display the open panel */
     if (!_receivedDroppedFiles)
         [self displayOpenPanel];
@@ -59,6 +86,9 @@
 
 // from NSApplicationDelegate protocol
 - (BOOL) application: (NSApplication *) theApplication openFile: (NSString *) filename {
+    
+    NSLog(@"Open File: %@",filename);
+    
     /* Note that we received a file */
     _receivedDroppedFiles = YES;
 
@@ -125,12 +155,16 @@
  * @param info Informative text.
  */
 - (void) displayBundlingError: (NSString *) info {
-    NSAlert *alert = [NSAlert new];
-    [alert setMessageText: NSLocalizedString(@"Could not bundle the application for distribution.", @"No files alert message text")];
-    [alert setInformativeText: info];
-    [alert runModal];
-    
-    [[NSApplication sharedApplication] terminate: self];
+    if (!_hasCommandLineArguments) {
+        NSAlert *alert = [NSAlert new];
+        [alert setMessageText: NSLocalizedString(@"Could not bundle the application for distribution.", @"No files alert message text")];
+        [alert setInformativeText: info];
+        [alert runModal];
+        
+        [[NSApplication sharedApplication] terminate: self];
+    } else {
+        exit(1);
+    }
 }
 
 /**
@@ -159,11 +193,13 @@
  * @param path Path to the application.
  */
 - (void) openApplicationWithPath: (NSString *) path {
+    [self processCLIDefaultSimulator];
+    
     NSError *error;
     
     /* Load the application info */
     PLSimulatorApplication *app = [[PLSimulatorApplication alloc] initWithPath: path error: &error];
-    if (app == nil) {
+    if (app == nil && !_hasCommandLineArguments) {
         NSLog(@"Could not load simulator app info: %@", error);
         
         /* Inform the user */
@@ -171,25 +207,34 @@
         [self displayErrorWithMessage: NSLocalizedString(@"Could not read application property list.", @"Alert error message")
                                  info: [NSString stringWithFormat: textFmt, [path lastPathComponent]]];
         return;
+    } else if (app == nil && _hasCommandLineArguments) {
+        exit(1);
     }
     
-    /* If the app supports multiple device families, request the preferred family from the user */
-    if ([app.deviceFamilies count] > 1) {
-        /* Display the config UI */
-        BundlerConfigWindowController *controller = [[BundlerConfigWindowController alloc] initWithSimulatorApp: (PLSimulatorApplication *) app];
-        [controller setDelegate: self];
-        [controller showWindow: self];
-        [[controller window] makeKeyWindow];
-        
-        /* Save the controller reference */
-        [_appConfigControllers addObject: controller];
-        
-        /* Note that a task is active */
-        [self addActiveTask];
-    } else {
-        /* Otherwise, package the application immediately */
-        [self executeBundlerWithSimulatorApp: app deviceFamily: [app.deviceFamilies anyObject]];
-    }    
+    
+    if (_defaultSimulator == SBADefaultSimulatoriPhone) {
+        [self executeBundlerWithSimulatorApp:app deviceFamily:[PLSimulatorDeviceFamily iphoneFamily]];
+    } else if (_defaultSimulator == SBADefaultSimulatoriPad) {
+        [self executeBundlerWithSimulatorApp:app deviceFamily:[PLSimulatorDeviceFamily ipadFamily]];
+    } else if (_defaultSimulator == SBADefaultSimulatorUndefined) {
+        /* If the app supports multiple device families, request the preferred family from the user */
+        if ([app.deviceFamilies count] > 1) {
+            /* Display the config UI */
+            BundlerConfigWindowController *controller = [[BundlerConfigWindowController alloc] initWithSimulatorApp: (PLSimulatorApplication *) app];
+            [controller setDelegate: self];
+            [controller showWindow: self];
+            [[controller window] makeKeyWindow];
+            
+            /* Save the controller reference */
+            [_appConfigControllers addObject: controller];
+            
+            /* Note that a task is active */
+            [self addActiveTask];
+        } else {
+            /* Otherwise, package the application immediately */
+            [self executeBundlerWithSimulatorApp: app deviceFamily: [app.deviceFamilies anyObject]];
+        }
+    }
 }
 
 /**

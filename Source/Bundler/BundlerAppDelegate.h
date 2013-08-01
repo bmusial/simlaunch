@@ -31,8 +31,18 @@
 #import "BundlerConfigWindowController.h"
 #import "BundlerTool.h"
 
+typedef enum {
+    SBADefaultSimulatorUndefined    = -9999,
+    SBADefaultSimulatorUserSelect   = 0,
+    SBADefaultSimulatoriPhone       = 1,
+    SBADefaultSimulatoriPad         = 2
+} SBADefaultSimulator;
+
 @interface BundlerAppDelegate : NSObject <BundlerConfigWindowControllerDelegate> {
 @private
+    SBADefaultSimulator _defaultSimulator;
+    BOOL _hasCommandLineArguments;
+    
     /** If NO, no files were opened by the app. Used to determine if the app should
      * immediately exit. */
     BOOL _receivedDroppedFiles;
