@@ -31,7 +31,16 @@
 #import <ScriptingBridge/ScriptingBridge.h>
 
 /* App bundle ID. Used to request that the simulator be brought to the foreground */
-#define SIM_APP_BUNDLE_ID @"com.apple.iphonesimulator"
+NSString *simulatorPreferencesName = @"com.apple.iphonesimulator";
+
+NSString *deviceProperty = @"SimulateDevice";
+NSString *deviceIphoneRetina3_5Inch = @"iPhone Retina (3.5-inch)";
+NSString *deviceIphoneRetina4_0Inch = @"iPhone Retina (4-inch)";
+NSString *deviceIphoneRetina4_0Inch_64bit = @"iPhone Retina (4-inch 64-bit)";
+NSString *deviceIphone = @"iPhone";
+NSString *deviceIpad = @"iPad";
+NSString *deviceIpadRetina = @"iPad Retina";
+NSString *deviceIpadRetina_64bit = @"iPad Retina (64-bit)";
 
 /* Load a class from the runtime-loaded iPhoneSimulatorRemoteClient framework */
 #define C(name) NSClassFromString(@"" #name)
@@ -94,6 +103,14 @@
         [self displayLaunchError: NSLocalizedString(@"A failure occured loading the iPhoneSimulatorRemoteClient private framework.", 
                                                     @"Failed to load private framework alert text")];
     }
+    
+    
+    /* Find and load all Xcode platform SDKs; without this, the iPhoneSimulatorRemoteClient API will be unable to locate
+     * SDK roots via DTiPhoneSimulatorSystemRoot. */
+    if (![C(DVTPlatform) loadAllPlatformsReturningError: &error]) {
+        NSLog(@"Failed to load platform SDKs: %@", error);
+        return;
+    }
 
     /* Create the app specifier */
     appSpec = [C(DTiPhoneSimulatorApplicationSpecifier) specifierWithApplicationPath: _app.path];
@@ -142,24 +159,27 @@
     [config setSimulatedApplicationLaunchArgs: [NSArray array]];
     [config setSimulatedApplicationLaunchEnvironment: [NSDictionary dictionary]];
 
-    if ([config respondsToSelector: @selector(setSimulatedDeviceFamily:)]) {
-        /* Use the requested default, if supported. Otherwise, prefer iPad over iPhone, but only if supported */
-        if (sdk != nil && _defaultDeviceFamily != nil && [sdk.deviceFamilies containsObject: _defaultDeviceFamily]) {
-            [config setSimulatedDeviceFamily: [NSNumber numberWithInt: _defaultDeviceFamily.deviceFamilyCode]]; 
-        } else if (sdk != nil &&
-            [_app.deviceFamilies containsObject: [PLSimulatorDeviceFamily ipadFamily]] && 
-            [sdk.deviceFamilies containsObject: [PLSimulatorDeviceFamily ipadFamily]]) 
-        {
-            [config setSimulatedDeviceFamily: [NSNumber numberWithInt: DTiPhoneSimulatoriPadFamily]]; 
-        } else {
-            [config setSimulatedDeviceFamily: [NSNumber numberWithInt: DTiPhoneSimulatoriPhoneFamily]];
-        }
+    DTiPhoneSimulatorFamily family;
+    /* Use the requested default, if supported. Otherwise, prefer iPad over iPhone, but only if supported */
+    if (sdk != nil && _defaultDeviceFamily != nil && [sdk.deviceFamilies containsObject: _defaultDeviceFamily]) {
+        family = _defaultDeviceFamily.deviceFamilyCode;
+    } else if (sdk != nil &&
+               [_app.deviceFamilies containsObject:[PLSimulatorDeviceFamily ipadFamily]] &&
+               [sdk.deviceFamilies containsObject:[PLSimulatorDeviceFamily ipadFamily]])
+    {
+        family = DTiPhoneSimulatoriPadFamily;
+    } else {
+        family = DTiPhoneSimulatoriPhoneFamily;
     }
     
     [config setLocalizedClientName: @"SimLauncher"];
+    [config setSimulatedDeviceFamily:@(family)];
+
+    NSString *deviceInfoName = [self deviceInfoNameForFamily:family retina:NO isTallDevice:NO];
+    [config setSimulatedDeviceInfoName:deviceInfoName];
     
     /* Start the session */
-    session = [[[C(DTiPhoneSimulatorSession) alloc] init] autorelease];
+    session = [[C(DTiPhoneSimulatorSession) alloc] init];
     [session setDelegate: self];
     [session setSimulatedApplicationPID: [NSNumber numberWithInt: 35]];
     
@@ -172,6 +192,33 @@
         [self displayLaunchError: text];
     }
 }
+
+- (NSString *)deviceInfoNameForFamily:(DTiPhoneSimulatorFamily)family retina:(BOOL)retina isTallDevice:(BOOL)isTallDevice {
+    NSString *deviceInfoName;
+    if (retina) {
+        if (family == DTiPhoneSimulatoriPhoneFamily) {
+            deviceInfoName = deviceIpadRetina;
+        }
+        else {
+            if (isTallDevice) {
+                deviceInfoName = deviceIphoneRetina4_0Inch;
+            } else {
+                deviceInfoName = deviceIphoneRetina3_5Inch;
+            }
+        }
+    } else {
+        if (family == DTiPhoneSimulatoriPadFamily) {
+            deviceInfoName = deviceIpad;
+        } else {
+            deviceInfoName = deviceIphone;
+        }
+    }
+    CFPreferencesSetAppValue((__bridge CFStringRef)deviceProperty, (__bridge CFPropertyListRef)deviceInfoName, (__bridge CFStringRef)simulatorPreferencesName);
+    CFPreferencesAppSynchronize((__bridge CFStringRef)simulatorPreferencesName);
+    
+    return deviceInfoName;
+}
+
 
 // from DTiPhoneSimulatorSessionDelegate protocol
 - (void) session: (DTiPhoneSimulatorSession *) session didEndWithError: (NSError *) error {
@@ -186,7 +233,7 @@
         NSLog(@"Did start app %@ successfully, exiting", _app.path);
 
         /* Bring simulator to foreground */
-        [[SBApplication applicationWithBundleIdentifier: SIM_APP_BUNDLE_ID] activate];
+        [[SBApplication applicationWithBundleIdentifier:simulatorPreferencesName] activate];
 
         /* Exit */
         [[NSApplication sharedApplication] terminate: self];

@@ -1,4 +1,4 @@
-#import "classdump.h"
+#import "DVTiPhoneSimulatorRemoteClient.h"
 
 /** Device family constants  */
 typedef enum {
@@ -8,3 +8,11 @@ typedef enum {
     /** iPad Devices */
     DTiPhoneSimulatoriPadFamily = 2
 } DTiPhoneSimulatorFamily;
+
+/** Platform API */
+@interface DVTPlatform : NSObject
+
+/** Load all platform SDKs */
++ (BOOL)loadAllPlatformsReturningError:(id*)arg1;
+
+@end
