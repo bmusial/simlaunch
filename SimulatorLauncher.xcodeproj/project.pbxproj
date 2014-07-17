@@ -241,6 +241,7 @@
 		054C8117112B9D53006D87F6 /* PLSimulatorDeviceFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLSimulatorDeviceFamily.h; sourceTree = "<group>"; };
 		054C8118112B9D53006D87F6 /* PLSimulatorDeviceFamily.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLSimulatorDeviceFamily.m; sourceTree = "<group>"; };
 		054C811F112B9D89006D87F6 /* PLSimulatorDeviceFamilyTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLSimulatorDeviceFamilyTests.m; sourceTree = "<group>"; };
+		0579B98718FC1B56002E23AC /* SimulatorHost.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SimulatorHost.h; sourceTree = "<group>"; };
 		05CC90F21128C8C5001912D5 /* PLSimulator.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PLSimulator.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CC90FD1128C91A001912D5 /* PLSimulator-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "PLSimulator-Info.plist"; sourceTree = "<group>"; };
 		05CC91001128C92F001912D5 /* PLSimulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLSimulator.h; sourceTree = "<group>"; };
@@ -375,6 +376,7 @@
 		0523F643112694C8004FB4EB /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
+				0579B98618FC1B56002E23AC /* SimulatorHost */,
 				0523F644112694C8004FB4EB /* iPhoneSimulatorRemoteClient */,
 				0523F646112694C8004FB4EB /* README.txt */,
 			);
@@ -397,6 +399,14 @@
 				0523F67C112699D0004FB4EB /* PLTestCase.m */,
 			);
 			name = "Test Support";
+			sourceTree = "<group>";
+		};
+		0579B98618FC1B56002E23AC /* SimulatorHost */ = {
+			isa = PBXGroup;
+			children = (
+				0579B98718FC1B56002E23AC /* SimulatorHost.h */,
+			);
+			path = SimulatorHost;
 			sourceTree = "<group>";
 		};
 		05CC90FC1128C91A001912D5 /* PLSimulator */ = {
@@ -594,7 +604,6 @@
 				05CC8F831128B67C001912D5 /* Copy Frameworks */,
 				0523F66511269876004FB4EB /* Sources */,
 				0523F66611269876004FB4EB /* Frameworks */,
-				0523F66711269876004FB4EB /* Run Tests */,
 			);
 			buildRules = (
 			);
@@ -633,7 +642,6 @@
 				05CC91571128CA18001912D5 /* Copy Frameworks */,
 				05CC91291128C974001912D5 /* Sources */,
 				05CC912A1128C974001912D5 /* Frameworks */,
-				05CC912B1128C974001912D5 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -765,33 +773,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0523F66711269876004FB4EB /* Run Tests */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Run Tests";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\n# RunUnitTests sets this, so we need to add our own dependencies, otherwise we have trouble loading\n# secondary framework dependencies.\nexport DYLD_FRAMEWORK_PATH=\"${SOURCE_ROOT}/Dependencies\"\n\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
-		};
-		05CC912B1128C974001912D5 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\n# RunUnitTests sets this, so we need to add our own dependencies, otherwise we have trouble loading\n# secondary framework dependencies.\nexport DYLD_FRAMEWORK_PATH=\"${SOURCE_ROOT}/Dependencies\"\n\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
-		};
 		05CC92D41128E190001912D5 /* Fix Install Names */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -818,7 +799,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Set the destroot\nDESTROOT=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME} ${CURRENT_PROJECT_VERSION}\"\nmkdir -p \"${DESTROOT}\"\n\n# Populate the destroot\ntar -C \"${BUILD_DIR}/${CONFIGURATION}\" -cf - \"Simulator Bundler.app\" | tar -C \"${DESTROOT}\" -xf -\ncp \"${SOURCE_ROOT}/README.txt\" \"${DESTROOT}\"\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\"";
+			shellScript = "# Set the destroot\nDESTROOT=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME} ${CURRENT_PROJECT_VERSION}\"\nmkdir -p \"${DESTROOT}\"\n\n# Populate the destroot\ntar -C \"${BUILD_DIR}/${CONFIGURATION}\" -cf - \"Simulator Bundler.app\" | tar -C \"${DESTROOT}\" -xf -\ncp \"${SOURCE_ROOT}/README.md\" \"${DESTROOT}\"\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 
