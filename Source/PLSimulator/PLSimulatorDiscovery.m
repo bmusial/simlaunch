@@ -212,7 +212,11 @@ static NSInteger platform_compare_by_version (id obj1, id obj2, void *context) {
         if (_canonicalSDKName == nil)
             hasExpectedSDK = YES;
 
+        NSLog(@"++++ Platform: %@", path);
+        
         for (PLSimulatorSDK *sdk in platform.sdks) {
+            NSLog(@"++++ SDK: %@ %@ %@", sdk.canonicalName, sdk.version, sdk.deviceFamilies);
+            
             /* If greater than or equal to the minimum version, this platform SDK meets the requirements */
             if (_version != nil && rpm_vercomp([sdk.version UTF8String], [_version UTF8String]) >= 0)
                 hasMinVersion = YES;
