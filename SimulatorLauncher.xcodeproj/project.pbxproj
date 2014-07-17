@@ -269,7 +269,7 @@
 		05CC93BF1128ED3D001912D5 /* LauncherSimClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LauncherSimClient.h; sourceTree = "<group>"; };
 		05CC93C01128ED3D001912D5 /* LauncherSimClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LauncherSimClient.m; sourceTree = "<group>"; };
 		05CC94BD11290474001912D5 /* ScriptingBridge.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ScriptingBridge.framework; path = System/Library/Frameworks/ScriptingBridge.framework; sourceTree = SDKROOT; };
-		05CC94DA11290A74001912D5 /* Simulator Bundler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Simulator Bundler.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05CC94DA11290A74001912D5 /* Simulator_Bundler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Simulator_Bundler.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CC94FB11290B16001912D5 /* Simulator Bundler-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Simulator Bundler-Info.plist"; sourceTree = "<group>"; };
 		05CC950411290B7C001912D5 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		05CC950611290BA0001912D5 /* BundlerAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BundlerAppDelegate.h; sourceTree = "<group>"; };
@@ -537,7 +537,7 @@
 				0523F66911269876004FB4EB /* Launcher Tests.octest */,
 				05CC90F21128C8C5001912D5 /* PLSimulator.framework */,
 				05CC912D1128C974001912D5 /* PLSimulator Tests.octest */,
-				05CC94DA11290A74001912D5 /* Simulator Bundler.app */,
+				05CC94DA11290A74001912D5 /* Simulator_Bundler.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -671,7 +671,7 @@
 			);
 			name = "Simulator Bundler";
 			productName = "Simulator Bundler";
-			productReference = 05CC94DA11290A74001912D5 /* Simulator Bundler.app */;
+			productReference = 05CC94DA11290A74001912D5 /* Simulator_Bundler.app */;
 			productType = "com.apple.product-type.application";
 		};
 		8D1107260486CEB800E47090 /* Launcher */ = {
@@ -1171,7 +1171,7 @@
 					"-framework",
 					AppKit,
 				);
-				PRODUCT_NAME = "Simulator Bundler";
+				PRODUCT_NAME = Simulator_Bundler;
 			};
 			name = Debug;
 		};
@@ -1199,7 +1199,7 @@
 					"-framework",
 					AppKit,
 				);
-				PRODUCT_NAME = "Simulator Bundler";
+				PRODUCT_NAME = Simulator_Bundler;
 				ZERO_LINK = NO;
 			};
 			name = Release;
